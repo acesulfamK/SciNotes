@@ -1,0 +1,14 @@
+[project]
+name = "gradio-paint-tool"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "gradio>=5.16.1",
+    "ipykernel>=6.29.5",
+    "jupyter>=1.1.1",
+    "numpy>=2.2.3",
+    "pix2tex[gui]>=0.1.4",
+    "pix2text>=1.1.2.3",
+]
