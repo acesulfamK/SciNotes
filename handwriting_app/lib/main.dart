@@ -19,6 +19,26 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class TrianglePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.black // 三角形の色を黒に設定
+      ..style = PaintingStyle.fill; // 塗りつぶし
+
+    final Path path = Path();
+    path.moveTo(size.width / 2, 0); // 三角形の頂点 (上)
+    path.lineTo(0, size.height); // 左下
+    path.lineTo(size.width, size.height); // 右下
+    path.close(); // 三角形を閉じる
+
+    canvas.drawPath(path, paint); // 三角形を描画
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
 class ScribbleScreen extends StatefulWidget {
   @override
   _ScribbleScreenState createState() => _ScribbleScreenState();
@@ -238,10 +258,23 @@ class _ScribbleScreenState extends State<ScribbleScreen> {
       body: Column(
         children: [
           Expanded(
-            child: Scribble(
-              notifier: _scribbleNotifier,
-              drawPen: true, // 描画モードを有効化
-            ),
+            child: Stack(
+              children: [
+                // Scribble キャンバス (背景側)
+                Scribble(
+                  notifier: _scribbleNotifier,
+                  drawPen: true,
+                ),
+                Positioned(
+                  left: 100,  
+                  top: 150,   
+                  child: CustomPaint(
+                    size: const Size(100, 100), // 三角形のサイズ
+                    painter: TrianglePainter(),
+                  ),
+                ),
+              ],
+            )
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
