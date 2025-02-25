@@ -19,23 +19,26 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class TrianglePainter extends CustomPainter {
+class PolygonPainter extends CustomPainter {
+  final Path path = Path();
   @override
+  PolygonPainter(List<Point> points) {
+    for (int i = 0; i < points.length; i++) {
+      final point = points[i];
+      if (i == 0) {
+        path.moveTo(point.x, point.y);
+      } else {
+        path.lineTo(point.x, point.y);
+      }
+    }
+
+  }
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
       ..color = Colors.black // 三角形の色を黒に設定
       ..style = PaintingStyle.fill; // 塗りつぶし
-
-    final Path path = Path();
-    path.moveTo(size.width / 2, 0); // 三角形の頂点 (上)
-    path.lineTo(0, size.height); // 左下
-    path.lineTo(size.width, size.height); // 右下
-    path.close(); // 三角形を閉じる
-
     canvas.drawPath(path, paint); // 三角形を描画
   }
-
-
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 
@@ -54,7 +57,27 @@ class ScribbleScreen extends StatefulWidget {
 
 class CustomScribbleNotifier extends ScribbleNotifier {
   bool isLassoMode = false;
+
+  List<List<Point>> figures= [
+          <Point>[Point(100, 100), Point(200, 100), Point(500, 500)],
+          <Point>[Point(500, 100), Point(100, 100), Point(500, 200), Point(600, 600)],
+  ];
   
+  Positioned getPolygonLayer(List<Point> points){
+    return Positioned.fill(
+      child: GestureDetector(
+          behavior: HitTestBehavior.translucent, // 透明部分もヒットテスト対象に
+          onTapDown: (details) { print("背景がタッチされた");
+          },
+          child: CustomPaint(
+            painter: PolygonPainter(points),
+          ),
+      )
+    );
+  }
+  
+  
+
   bool isPointInsidePolygon(Point testPoint, List<Point> polygon) {
     int crossings = 0;
     for (int i = 0; i < polygon.length - 1; i++) {
@@ -267,22 +290,12 @@ class _ScribbleScreenState extends State<ScribbleScreen> {
         children: [
           Expanded(
             child: Stack(
-              children: [
-                // Scribble キャンバス (背景側)
+              children: <Widget>[
                 Scribble(
                   notifier: _scribbleNotifier,
                   drawPen: true,
                 ),
-                GestureDetector(
-                    behavior: HitTestBehavior.translucent, // 透明部分もヒットテスト対象に
-                    onTapDown: (details) {
-                      print("背景がタッチされた");
-                    },
-                    child: CustomPaint(
-                      size: const Size(100, 100), // 三角形のサイズ
-                      painter: TrianglePainter(),
-                    ),
-                )
+                ...(_scribbleNotifier.figures.map((points) => _scribbleNotifier.getPolygonLayer(points)).toList())
               ],
             ),
           ),
