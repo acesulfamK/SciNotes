@@ -119,16 +119,38 @@ class CustomScribbleNotifier extends ScribbleNotifier {
     _handlePenLifted();
   }
 
-  void _handlePenLifted() {
+  void _handlePenLifted() async {
     // Add any logic here (e.g., saving the stroke, updating UI)
     if (isLassoMode) {
       changeStrokeColor(Colors.red);
+  
+      // Collect lines that intersect with the lasso
+      final lassoLine = value.sketch.lines.last;
+      final intersectingLines = value.sketch.lines.sublist(0, value.sketch.lines.length - 1).where((line) {
+        return isLineIntersectingLasso(line, lassoLine);
+      }).toList();
+  
+      // Convert intersecting lines to JSON
+      final jsonString = jsonEncode({
+        'lines': intersectingLines.map((line) => line.toJson()).toList(),
+      });
+  
+      // Save JSON to file
+      try {
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath = '${directory.path}/lasso_intersecting_lines.json';
+        final file = File(filePath);
+        await file.writeAsString(jsonString);
+        print("Intersecting lines saved: $filePath");
+      } catch (e) {
+        print("Error saving intersecting lines: $e");
+      }
+  
       removeLastStroke();
     }
     print("Custom logic executed after pen lift.");
   }
 }
-
 
 class _ScribbleScreenState extends State<ScribbleScreen> {
   late CustomScribbleNotifier _scribbleNotifier;
