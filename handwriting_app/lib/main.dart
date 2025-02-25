@@ -35,8 +35,16 @@ class TrianglePainter extends CustomPainter {
     canvas.drawPath(path, paint); // 三角形を描画
   }
 
+
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+
+  /// タッチ領域をカスタマイズ
+  @override
+  bool hitTest(Offset position) {
+    return false;
+  }
+
 }
 
 class ScribbleScreen extends StatefulWidget {
@@ -265,16 +273,18 @@ class _ScribbleScreenState extends State<ScribbleScreen> {
                   notifier: _scribbleNotifier,
                   drawPen: true,
                 ),
-                Positioned(
-                  left: 100,  
-                  top: 150,   
-                  child: CustomPaint(
-                    size: const Size(100, 100), // 三角形のサイズ
-                    painter: TrianglePainter(),
-                  ),
-                ),
+                GestureDetector(
+                    behavior: HitTestBehavior.translucent, // 透明部分もヒットテスト対象に
+                    onTapDown: (details) {
+                      print("背景がタッチされた");
+                    },
+                    child: CustomPaint(
+                      size: const Size(100, 100), // 三角形のサイズ
+                      painter: TrianglePainter(),
+                    ),
+                )
               ],
-            )
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
